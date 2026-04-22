@@ -1,624 +1,531 @@
-<a gente fez uma seleção
-  !DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Script SDR — Retrabalho de Leads</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --black: #0D0D0D;
-    --white: #F5F3EE;
-    --accent: #FF6B35;
-    --accent2: #FFB800;
-    --gray: #1A1A1A;
-    --gray2: #2A2A2A;
-    --gray3: #3D3D3D;
-    --text-muted: #888;
-    --text-mid: #BBBBBB;
-    --purple: #7B61FF;
-    --teal: #00D4AA;
-    --green: #C8FF00;
-    --red: #FF4444;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; line-height: 1.6; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script SDR — Retrabalho de Leads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --white: #F5F3EE;
+            --accent: #FF6B35;
+            --accent2: #FFB800;
+            --gray: #1A1A1A;
+            --gray2: #2A2A2A;
+            --gray3: #3D3D3D;
+            --text-muted: #888;
+            --text-mid: #BBBBBB;
+            --purple: #7B61FF;
+            --teal: #00D4AA;
+            --green: #C8FF00;
+            --red: #FF4444;
+        }
 
-  .hero { padding: 56px 48px 36px; border-bottom: 1px solid var(--gray3); position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%); pointer-events: none; }
-  .hero-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .hero-label::before { content: ''; width: 24px; height: 2px; background: var(--accent); display: inline-block; }
-  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 48px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
-  .hero h1 em { font-style: normal; color: var(--accent); }
-  .hero-sub { font-size: 14px; color: var(--text-muted); max-width: 540px; }
-  .hero-meta { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .meta-pill { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--gray3); color: var(--text-mid); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; line-height: 1.6; }
 
-  .container { max-width: 900px; margin: 0 auto; padding: 0 48px 80px; }
+        .hero { padding: 56px 48px 36px; border-bottom: 1px solid var(--gray); position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%); pointer-events: none; }
+        .hero-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .hero-label::before { content: ''; width: 24px; height: 2px; background: var(--accent); display: inline-block; }
 
-  .alert-bar { margin: 28px 0 0; background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; padding: 13px 18px; font-size: 13px; color: var(--accent); display: flex; align-items: flex-start; gap: 10px; }
+        .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 48px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
+        .hero-sub { font-size: 14px; color: var(--text-muted); max-width: 540px; }
 
-  .steps { margin-top: 36px; display: flex; flex-direction: column; gap: 2px; }
+        .hero-meta { margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .meta-pill { padding: 8px 16px; font-size: 13px; font-weight: 500; background: var(--gray); display: flex; align-items: center; gap: 8px; border-radius: 20px; }
 
-  .step { border-radius: 12px; overflow: hidden; margin-bottom: 2px; }
-  .step-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; background: var(--gray); border-radius: 12px; transition: background .15s; user-select: none; }
-  .step-header:hover { background: var(--gray2); }
-  .step.active .step-header { border-radius: 12px 12px 0 0; }
-  .step-num { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; min-width: 28px; color: var(--text-muted); }
-  .step-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .step-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; flex: 1; color: var(--white); }
-  .step-time { font-size: 11px; color: var(--text-muted); margin-right: 6px; }
-  .step-arrow { color: var(--text-muted); font-size: 12px; transition: transform .2s; }
-  .step.active .step-arrow { transform: rotate(90deg); }
-  .step-body { display: none; background: var(--gray); border-radius: 0 0 12px 12px; padding: 0 20px 20px; border-top: 1px solid var(--gray3); }
-  .step.active .step-body { display: block; }
+        .progress-bar><div class="progress-fill" id="progress"></div></div>
 
-  .fala-block { margin-top: 14px; }
-  .fala-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; display: flex; align-items: center; gap: 8px; }
-  .fala-label::after { content: ''; flex: 1; height: 1px; background: var(--gray3); }
-  .fala-label.lead-label { color: var(--purple); }
-  .fala-label.lead-label::after { background: rgba(123,97,255,0.2); }
+        .hero { padding: 56px 48px 36px; border-bottom: 1px solid var(--gray); position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%); pointer-events: none; }
+        .hero-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .hero-label::before { content: '——'; color: var(--accent); margin-right: 8px; }
+        .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 48px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
+        .hero-sub { font-size: 14px; color: var(--text-muted); max-width: 540px; }
+        .hero-meta { margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .meta-pill { padding: 8px 16px; font-size: 13px; font-weight: 500; background: var(--gray); display: flex; align-items: center; gap: 8px; border-radius: 20px; }
 
-  .fala { background: var(--gray2); border-radius: 10px; padding: 13px 16px; font-size: 13.5px; line-height: 1.65; color: #E8E6E0; margin-bottom: 7px; border-left: 3px solid transparent; }
-  .fala.key { border-left-color: var(--accent); background: rgba(255,107,53,0.06); }
-  .fala.key-yellow { border-left-color: var(--accent2); background: rgba(255,184,0,0.06); }
-  .fala.key-teal { border-left-color: var(--teal); background: rgba(0,212,170,0.05); }
-  .fala.key-green { border-left-color: var(--green); background: rgba(200,255,0,0.05); }
-  .fala.lead { background: rgba(123,97,255,0.08); border-left-color: var(--purple); color: #C8C2FF; font-style: italic; }
-  .fala mark { background: rgba(255,107,53,0.2); color: #FF8C5A; border-radius: 3px; padding: 0 3px; font-weight: 500; }
-  .fala mark.yellow { background: rgba(255,184,0,0.18); color: var(--accent2); }
-  .fala mark.teal { background: rgba(0,212,170,0.15); color: var(--teal); }
-  .fala mark.green { background: rgba(200,255,0,0.15); color: var(--green); }
-  .fala ul { margin: 8px 0 4px 16px; }
-  .fala ul li { margin-bottom: 3px; font-size: 13px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .alert-bar { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; padding: 14px 20px; margin: 30px 48px; color: var(--accent); }
 
-  .dica { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; margin-bottom: 7px; padding: 10px 13px; border-radius: 8px; background: rgba(255,255,255,0.03); font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
-  .dica-icon { flex-shrink: 0; font-size: 13px; }
+        .steps { margin-top: 36px; }
+        .step { border-top: 1px solid var(--gray3); overflow: hidden; }
+        .step-header { padding: 18px 24px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .2s; position: relative; }
+        .step-header:hover { background: rgba(255,255,255,0.02); }
+        .step-num { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 24px; }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .step-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; flex: 1; }
+        .step-time { font-size: 11px; color: var(--text-muted); }
+        .step-arrow { color: var(--text-muted); font-size: 14px; transition: transform .2s; }
+        .step.active .step-arrow { transform: rotate(90deg); }
+        .step-body { padding: 0 24px 24px; border-top: 1px solid var(--gray3); display: none; background: rgba(255,255,255,0.008); }
+        .step.active .step-body { display: block; }
 
-  .bifurc { margin-top: 12px; border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; }
-  .bifurc-header { padding: 9px 15px; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; background: var(--gray2); color: var(--text-muted); }
-  .bifurc-bloco { border-top: 1px solid var(--gray3); padding: 13px 15px; }
-  .bifurc-bloco:nth-child(odd) { background: rgba(255,255,255,0.01); }
-  .bifurc-tag { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
-  .bifurc-tag.sim { color: var(--teal); }
-  .bifurc-tag.nao { color: var(--accent2); }
-  .bifurc-tag.danger { color: var(--red); }
-  .bifurc-tag.info { color: var(--green); }
+        .step-counter { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+        .step-dot.laranja { background: var(--accent); }
+        .step-dot.amarelo { background: var(--accent2); }
+        .step-dot.verde { background: var(--teal); }
+        .step-dot.roxo { background: var(--purple); }
+        .step-dot.lima { background: var(--green); }
 
-  .obj-section { margin-top: 18px; }
-  .obj-title { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--red); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
-  .obj-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,68,68,0.2); }
-  .obj-item { border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; margin-bottom: 7px; }
-  .obj-q { padding: 10px 15px; font-size: 13px; font-weight: 500; color: #FF8C8C; background: rgba(255,68,68,0.05); display: flex; align-items: center; gap: 8px; }
-  .obj-q::before { content: '✕'; font-size: 11px; opacity: .6; }
-  .obj-a { padding: 10px 15px; font-size: 13px; color: #D8D5CF; line-height: 1.6; border-top: 1px solid var(--gray3); }
+        .step:nth-child(odd) { background: rgba(255,255,255,0.01); }
+        
+        .fala { background: var(--gray); border-radius: 10px; padding: 14px 18px; margin: 12px 0; border-left: 3px solid transparent; position: relative; }
+        .fala.key { border-left-color: var(--accent); background: rgba(255,107,53,0.06); }
+        .fala.lead { border-left-color: var(--purple); background: rgba(123,97,255,0.06); color: #B8AFFF; font-style: italic; }
 
-  .enc-section { margin-top: 18px; }
-  .enc-title { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
-  .enc-title::after { content: ''; flex: 1; height: 1px; background: rgba(0,212,170,0.2); }
-  .enc-item { border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; margin-bottom: 7px; }
-  .enc-q { padding: 10px 15px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-  .enc-q.aluno { background: rgba(0,212,170,0.07); color: #5FFFD8; }
-  .enc-q.cnpj { background: rgba(255,107,53,0.07); color: #FF8C5A; }
-  .enc-q.budget { background: rgba(255,68,68,0.07); color: #FF8C8C; }
-  .enc-q.nao-tem { background: rgba(255,184,0,0.07); color: var(--accent2); }
-  .enc-a { padding: 10px 15px; font-size: 13px; color: #D8D5CF; line-height: 1.6; border-top: 1px solid var(--gray3); }
+        .fala-block { margin: 18px 0; }
+        .fala-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
 
-  .tips-box { margin-top: 36px; border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; overflow: hidden; }
-  .tips-header { padding: 14px 20px; background: rgba(255,107,53,0.06); font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-  .tips-list { padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; }
-  .tip-item { display: flex; gap: 10px; font-size: 13px; color: var(--text-mid); line-height: 1.5; }
-  .tip-icon { flex-shrink: 0; color: var(--accent); font-size: 13px; }
+        .bifurc { border: 1px solid var(--gray3); border-radius: 14px; margin: 18px 0; overflow: hidden; }
+        .bifurc-header { padding: 14px 18px; background: var(--gray); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; }
+        .bifurc-bloco { padding: 18px; border-top: 1px solid var(--gray3); }
+        .bifurc-bloco:nth-child(odd) { background: rgba(255,255,255,0.01); }
+        .bifurc-tag { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+        .bifurc-tag.sim { color: var(--teal); }
+        .bifurc-tag.nao { color: var(--accent2); }
+        .bifurc-tag.danger { color: var(--red); }
+        .bifurc-tag.info { color: var(--green); }
 
-  .rules-section { margin-top: 20px; border: 1px solid var(--gray3); border-radius: 14px; overflow: hidden; }
-  .rules-header { padding: 14px 20px; background: var(--gray2); font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-  .rules-grid { display: grid; grid-template-columns: 1fr 1fr; }
-  @media (max-width: 600px) { .rules-grid { grid-template-columns: 1fr; } .container { padding: 0 20px 60px; } .hero { padding: 40px 20px 28px; } }
-  .rule-item { padding: 14px 20px; border-bottom: 1px solid var(--gray3); border-right: 1px solid var(--gray3); font-size: 13px; color: var(--text-mid); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
-  .rule-item:nth-child(2n) { border-right: none; }
-  .rule-item:nth-last-child(-n+2) { border-bottom: none; }
-  .rule-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-  .rule-icon.green { background: rgba(0,212,170,0.15); color: var(--teal); }
-  .rule-icon.red { background: rgba(255,68,68,0.12); color: var(--red); }
+        .obj-section { margin-top: 18px; }
+        .obj-title { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--red); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+        .obj-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,68,68,0.2); }
+        .obj-item { border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; margin-bottom: 7px; }
+        .obj-q { padding: 10px 15px; font-size: 13px; font-weight: 500; color: #FF8C8C; background: rgba(255,68,68,0.05); display: flex; align-items: center; gap: 8px; }
+        .obj-q::before { content: '✕'; font-size: 11px; opacity: .6; }
+        .obj-a { padding: 10px 15px; font-size: 13px; color: #D8D5CF; line-height: 1.6; border-top: 1px solid var(--gray3); }
 
-  .footer { margin-top: 20px; padding: 18px 0 0; border-top: 1px solid var(--gray3); font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
-  .footer-brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: .06em; }
+        .enc-section { margin-top: 18px; }
+        .enc-title { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+        .enc-title::after { content: ''; flex: 1; height: 1px; background: rgba(0,212,170,0.2); }
+        .enc-item { border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; margin-bottom: 7px; }
+        .enc-q { padding: 10px 15px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .enc-q.sem-barb { background: rgba(255,68,68,0.05); color: #FF8C8C; }
+        .enc-q.sem-cnpj { background: rgba(0,212,170,0.05); color: #5FFFD8; }
+        .enc-a { padding: 10px 15px; font-size: 13px; color: #D8D5CF; line-height: 1.6; border-top: 1px solid var(--gray3); }
 
-  .progress-bar { height: 3px; background: var(--gray3); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
-  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
-</style>
+        .tips-box { border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; margin: 36px 0; overflow: hidden; }
+        .tips-header { padding: 14px 20px; background: rgba(255,107,53,0.06); font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+        .tips-list { padding: 14px 20px; }
+        .tip-item { margin: 8px 0; display: flex; gap: 8px; align-items: flex-start; }
+        .tip-icon { color: var(--accent); font-weight: 700; }
+
+        .rules-section { border: 1px solid var(--gray3); border-radius: 14px; margin: 20px 0; overflow: hidden; }
+        .rules-header { padding: 14px 20px; background: var(--gray); font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+        .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .rule-item { padding: 14px 20px; border-bottom: 1px solid var(--gray3); border-right: 1px solid var(--gray3); display: flex; gap: 8px; }
+        .rule-item:nth-child(2n) { border-right: none; }
+        .rule-icon { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; margin-top: 1px; }
+        .rule-icon.green { background: rgba(0,212,170,0.2); color: var(--teal); }
+        .rule-icon.red { background: rgba(255,68,68,0.2); color: var(--red); }
+
+        .footer { margin-top: 30px; padding: 20px 48px; border-top: 1px solid var(--gray3); text-align: center; font-size: 11px; color: var(--text-muted); }
+        .footer-brand { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
+
+        .dica { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 12px; color: #CCC; display: flex; gap: 8px; }
+
+        mark { background: rgba(255,107,53,0.3); color: #FF8C5A; padding: 2px 4px; border-radius: 3px; font-weight: 500; }
+
+        .progress-bar { height: 3px; background: var(--gray3); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+
+        @media (max-width: 768px) {
+            .hero { padding: 40px 24px 24px; }
+            .alert-bar { margin: 20px 24px; }
+            .step-header { padding: 14px 18px; }
+            .step-body { padding: 0 18px 18px; }
+            .footer { padding: 20px 24px; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 
 <div class="hero">
-  <div class="hero-label">Cash Barber · Pré-vendas</div>
-  <h1>Script SDR<br><em>retrabalho</em></h1>
-  <p class="hero-sub">Leads que se cadastraram em algum momento e não converteram. Reativação com novo posicionamento.</p>
-  <div class="hero-meta">
-    <span class="meta-pill">⏱ Meta: 8–12 min</span>
-    <span class="meta-pill">🎯 Objetivo: agendar consultoria</span>
-    <span class="meta-pill">♻️ Base: leads inativos</span>
-  </div>
+    <div class="hero-label">Cash Barber · Pré-vendas</div>
+    <h1>Script SDR<br>retrabalho</h1>
+    <p class="hero-sub">Leads que se cadastraram em algum momento e não converteram. Reativação com novo posicionamento.</p>
+    <div class="hero-meta">
+        <span class="meta-pill">⏱ Meta: 8–12 min</span>
+        <span class="meta-pill">🎯 Objetivo: agendar consultoria</span>
+        <span class="meta-pill">♻️ Base: leads inativos</span>
+    </div>
 </div>
 
 <div class="container">
-
-  <div class="alert-bar">
-    🔁 <span><strong>Contexto:</strong> esse lead já teve contato com a Podium em algum momento. Não menciona isso como falha — posiciona como seleção especial. O discurso é de novidade, não de segunda chance.</span>
-  </div>
-
-  <div class="steps" id="steps">
-
-    <!-- ETAPA 1 -->
-    <div class="step active" data-step="1">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">01</span>
-        <span class="step-dot" style="background:#FF6B35"></span>
-        <span class="step-name">Abertura + recontexualização</span>
-        <span class="step-time">~40s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala key">
-            "Bom dia/tarde, <mark>[nome]</mark>! Tudo bem? Aqui é o <mark>[seu nome]</mark>, faço parte da equipe do Lincohn Agner, do Cash Barber / Podium Educação."
-          </div>
-          <div class="fala key">
-            "Olha, <mark>[nome]</mark>, a gente fez uma seleção de empresários que em algum momento se inscreveram para receber uma consultoria — e seu nome apareceu aqui. Então estou te ligando porque <mark>reestruturamos todos os nossos planos</mark>, ficou muito melhor, e ainda tem acompanhamento de um mentor nos primeiros passos. Faz sentido te contar sobre isso?"
-          </div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead confirma disponibilidade</div>
-        </div>
-        <div class="dica">
-          <span class="dica-icon">⚡</span>
-          Não menciona que ele "não fechou antes" ou que é uma "segunda chance". O tom é de seleção e novidade — ele foi escolhido, não recuperado.
-        </div>
-        <div class="dica">
-          <span class="dica-icon">⚠️</span>
-          Se não for um bom momento: "Sem problema! Qual o melhor horário pra eu te ligar hoje ou amanhã?" — agenda retorno e encerra.
-        </div>
-      </div>
+    <div class="alert-bar">
+        🔁 <strong>Contexto:</strong> esse lead já teve contato com a Podium em algum momento. Não menciona isso como falha — posiciona como seleção especial. O discurso é de novidade, não de segunda chance.
     </div>
 
-    <!-- ETAPA 2 -->
-    <div class="step" data-step="2">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">02</span>
-        <span class="step-dot" style="background:#FFB800"></span>
-        <span class="step-name">Validação do momento atual</span>
-        <span class="step-time">~60s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-        <div class="dica">
-          <span class="dica-icon">🔑</span>
-          Antes de qualquer coisa, valida se o lead ainda tem barbearia e o que aconteceu na época. Essas respostas vão moldar todo o restante da ligação.
-        </div>
+    <div class="steps" id="steps">
 
-        <div class="fala-block">
-          <div class="fala-label">SDR — pergunta 1</div>
-          <div class="fala key">"Primeira coisa que preciso entender: <mark>você ainda tem a barbearia?</mark>"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead confirma se ainda tem a barbearia</div>
-        </div>
-
-        <div class="bifurc">
-          <div class="bifurc-header">▶ Bifurcação — ainda tem barbearia?</div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag danger">✕ Não tem mais barbearia</div>
-            <div class="fala" style="margin-bottom:0">"Entendo, <mark>[nome]</mark>! Sem problema. Se um dia retomar, a gente tá aqui. Muito sucesso pra você em qualquer caminho que escolher. Até mais!" — <strong>encerra a ligação.</strong></div>
-          </div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag sim">✓ Ainda tem barbearia</div>
-            <div class="fala" style="margin-bottom:7px">"Que ótimo! <mark>[nome]</mark>, me conta — o que aconteceu na época que você se cadastrou e não deu continuidade ao projeto?"</div>
-            <div class="fala lead">Lead explica o motivo (financeiro, tempo, não estava pronto, esqueceu, etc.)</div>
-            <div class="dica" style="margin-top:8px">
-              <span class="dica-icon">👂</span>
-              Escuta sem julgamento. Anota o motivo — vai usar isso na ponte de valor mais pra frente.
+        <!-- ETAPA 1 -->
+        <div class="step active" data-step="1">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">01</span>
+                <span class="step-dot laranja"></span>
+                <span class="step-name">Abertura + recontexualização</span>
+                <span class="step-time">~40s</span>
+                <span class="step-arrow">▶</span>
             </div>
-          </div>
-        </div>
+            <div class="step-body">
+                <div class="dica">
+                    <span>⚡</span>
+                    Antes de qualquer coisa, valida se o lead ainda tem barbearia e o que aconteceu na época. Essas respostas vão moldar todo o restante da ligação.
+                </div>
 
-        <div class="fala-block" style="margin-top:14px">
-          <div class="fala-label">SDR — histórico de consultoria</div>
-          <div class="fala key-yellow">"Entendi. E você chegou a fazer alguma consultoria conosco na época?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead responde sim ou não</div>
-        </div>
+                <div class="fala-block">
+                    <div class="fala-label">SDR → pergunta 1</div>
+                    <div class="fala key">"Bom dia/tarde, <mark>[nome]</mark>! Tudo bem? Aqui é o <mark>[seu nome]</mark>, faço parte da equipe do Lincohn Agner, do Cash Barber / Podium Educação."</div>
+                </div>
 
-        <div class="bifurc">
-          <div class="bifurc-header">▶ Bifurcação — fez consultoria antes?</div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag sim">✓ Sim, fez consultoria</div>
-            <div class="fala key-teal" style="margin-bottom:0">"Então é ainda mais importante você fazer novamente — <mark class='teal'>mudou muita coisa desde então</mark>. Reestruturamos os planos, o produto evoluiu bastante e agora tem acompanhamento de mentor nos primeiros passos. Vale muito a pena ver o que mudou."</div>
-          </div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag nao">↓ Não fez consultoria</div>
-            <div class="fala key-green" style="margin-bottom:0">"Então tá na hora de conhecer! <mark class='green'>Reestruturamos tudo</mark>, os planos ficaram muito mais completos e agora tem acompanhamento de mentor nos primeiros passos. Você vai ver que evoluiu muito desde quando você se cadastrou."</div>
-          </div>
-        </div>
+                <div class="fala-block">
+                    <div class="fala-label">SDR → pergunta 2</div>
+                    <div class="fala key">"Olha, <mark>[nome]</mark>, Lincohn e Rapha fizeram uma seleção de empresários que em algum momento se inscreveram para receber uma consultoria — e seu nome apareceu aqui. Então estou te ligando porque <mark>reestruturamos todos os nossos planos</mark>, ficou muito melhor, e ainda tem acompanhamento de um mentor nos primeiros passos. Faz sentido te contar sobre isso?"</div>
+                </div>
 
-      </div>
-    </div>
+                <div class="fala-block">
+                    <div class="fala-label lead-label">Aguardar lead responder</div>
+                    <div class="fala lead">Lead confirma disponibilidade</div>
+                </div>
 
-    <!-- ETAPA 3 -->
-    <div class="step" data-step="3">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">03</span>
-        <span class="step-dot" style="background:#00D4AA"></span>
-        <span class="step-name">Exploração da dor atual</span>
-        <span class="step-time">~90s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-        <div class="dica">
-          <span class="dica-icon">🔑</span>
-          Uma pergunta por vez. Não corrige, não vende — só escuta e anota. A dor de hoje pode ser diferente da época do cadastro.
-        </div>
+                <div class="dica">
+                    <span>⚡</span>
+                    Não menciona que ele "não fechou antes" ou que é uma "segunda chance". O tom é de seleção e novidade — ele foi escolhido, não recuperado.
+                </div>
 
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala">"Legal. E hoje, o que mais tem te incomodado na gestão da barbearia?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead descreve dor atual</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala">"Você usa algum sistema hoje ou ainda faz tudo de forma manual?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead informa ferramenta atual</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala">"E hoje seus agendamentos funcionam como? Por alguma plataforma ou principalmente pelo WhatsApp?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead explica fluxo de agendamento</div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ETAPA 4 -->
-    <div class="step" data-step="4">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">04</span>
-        <span class="step-dot" style="background:#7B61FF"></span>
-        <span class="step-name">Qualificação estrutural</span>
-        <span class="step-time">~60s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala key">"Perfeito. E hoje, <mark>quantas cadeiras ativas</mark> você tem na barbearia?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead informa cadeiras</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala key-yellow">"E sendo bem sincero: <mark class='yellow'>esse formato que você usa hoje dá bastante trabalho?</mark> Você sente que perde tempo ou se perde no controle?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead valida a dor</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR — faturamento</div>
-          <div class="fala key">"E o faturamento médio mensal da barbearia hoje, <mark>gira em torno de quanto?</mark>"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead informa faturamento</div>
-        </div>
-
-        <div class="bifurc">
-          <div class="bifurc-header">▶ Bifurcação — faturamento até R$ 10.000</div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag sim">✓ Faturamento até R$ 10.000</div>
-            <div class="fala key" style="margin-bottom:7px">"<mark>[nome]</mark>, para quem está nessa faixa, o investimento inicial para começar é a partir de <mark>R$ 300,00</mark>. Caso a consultoria faça sentido, você teria condição de fazer esse investimento?"</div>
-            <div class="fala lead">Lead responde sim ou não</div>
-            <div class="dica" style="margin-top:8px">
-              <span class="dica-icon">⚠️</span>
-              Se NÃO → "Sem problema, <mark>[nome]</mark>! Quando estiver em um momento melhor financeiramente, a gente retoma. Sucesso!" — encerra. Se SIM → segue normalmente.
+                <div class="dica">
+                    <span>⚠️</span>
+                    Se não for um bom momento: "Sem problema! Qual o melhor horário pra eu te ligar hoje ou amanhã?" — agenda retorno e encerra.
+                </div>
             </div>
-          </div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag nao">↑ Faturamento acima de R$ 10.000</div>
-            <div class="fala" style="margin-bottom:0">Segue direto para as próximas perguntas.</div>
-          </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ETAPA 5 -->
-    <div class="step" data-step="5">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">05</span>
-        <span class="step-dot" style="background:#C8FF00"></span>
-        <span class="step-name">Ponte de valor + ancoragem</span>
-        <span class="step-time">~60s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-        <div class="dica">
-          <span class="dica-icon">💡</span>
-          Use o motivo que o lead deu na etapa 2 para conectar com a solução. "Você me disse que na época foi por X — a gente resolveu exatamente isso."
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR — conexão com o passado</div>
-          <div class="fala key">
-            "Então, você me contou que na época <mark>[repete o motivo que ele deu]</mark>. Faz sentido — e é exatamente por isso que essa consultoria agora faz ainda mais sentido pra você."
-          </div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR — ponte de valor</div>
-          <div class="fala key-teal">
-            "Imagina ter um sistema que organiza tudo isso — <mark class='teal'>agenda, assinatura, gestão financeira</mark> — enquanto você continua no operacional, cortando cabelo, vivendo a rotina da barbearia. Sem perder tempo, sem perder dinheiro, sem depender de anotação no papel ou de WhatsApp."
-          </div>
-          <div class="fala key-teal">
-            "E agora com <mark class='teal'>acompanhamento de mentor nos primeiros passos</mark> — você não vai estar sozinho na implementação. Faz sentido?"
-          </div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead confirma interesse</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">SDR — ancoragem da consultoria</div>
-          <div class="fala key">
-            "Então deixa eu te explicar como funciona a consultoria:"
-            <ul>
-              <li>É individual e personalizada pra sua barbearia</li>
-              <li>Acontece por Google Meet</li>
-              <li>Dura cerca de <mark>1 hora</mark> — e é <mark>gratuita</mark></li>
-              <li>O especialista vai olhar para a sua realidade — assinatura, gestão, performance</li>
-            </ul>
-          </div>
-          <div class="fala key">
-            "<mark>Faz sentido pra você fazer essa consultoria agora?</mark>"
-          </div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead confirmar</div>
-          <div class="fala lead">Lead confirma interesse na consultoria</div>
-        </div>
-        <div class="dica">
-          <span class="dica-icon">🛑</span>
-          Espera o "sim" antes de avançar para o agendamento.
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ETAPA 6 -->
-    <div class="step" data-step="6">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">06</span>
-        <span class="step-dot" style="background:#FF6B35"></span>
-        <span class="step-name">Verificação de decisor + CNPJ</span>
-        <span class="step-time">~40s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-
-        <div class="fala-block">
-          <div class="fala-label">SDR — decisor</div>
-          <div class="fala key">"Você faz essa gestão sozinho ou tem sócio, esposa ou alguém que participa das decisões com você?"</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead informa se tem parceiro de decisão</div>
-        </div>
-
-        <div class="bifurc">
-          <div class="bifurc-header">▶ Bifurcação — decisor</div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag sim">✓ Tem sócio / esposa / parceiro</div>
-            <div class="fala key" style="margin-bottom:7px">"Importante — como isso envolve o negócio dos dois, o ideal é que <mark>[sócio/esposa]</mark> esteja na consultoria também. No dia que formos agendar, ela/ele consegue estar presente?"</div>
-            <div class="dica" style="margin-top:8px">
-              <span class="dica-icon">⚠️</span>
-              Se SIM → agenda com os dois. Se NÃO → "Qual dia os dois conseguem juntos? A gente se adapta."
+        <!-- ETAPA 2 -->
+        <div class="step" data-step="2">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">02</span>
+                <span class="step-dot amarelo"></span>
+                <span class="step-name">Validação do momento atual</span>
+                <span class="step-time">~60s</span>
+                <span class="step-arrow">▶</span>
             </div>
-          </div>
-          <div class="bifurc-bloco">
-            <div class="bifurc-tag nao">↓ Decide sozinho</div>
-            <div class="fala" style="margin-bottom:0">Segue para validação de CNPJ.</div>
-          </div>
+            <div class="step-body">
+                <div class="fala-block">
+                    <div class="fala-label">SDR → pergunta 1</div>
+                    <div class="fala key">"Primeira coisa que preciso entender: <mark>você ainda tem a barbearia?</mark>"</div>
+                </div>
+
+                <div class="fala-block">
+                    <div class="fala-label lead-label">Aguardar lead responder</div>
+                    <div class="fala lead">Lead confirma se ainda tem a barbearia</div>
+                </div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Bifurcação — ainda tem barbearia?</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag danger">✕ Não tem mais barbearia</div>
+                        <div class="fala">"Entendo, <mark>[nome]</mark>! Sem problema. Se um dia retomar, a gente tá aqui. Muito sucesso pra você em qualquer caminho que escolher. Até mais!" — <strong>encerra a ligação.</strong></div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✓ Ainda tem barbearia</div>
+                        <div class="fala">"Que ótimo! <mark>[nome]</mark>, me conta — o que aconteceu na época que você se cadastrou e não deu continuidade ao projeto?"</div>
+                        <div class="fala lead">Lead explica o motivo (financeiro, tempo, não estava pronto, esqueceu, etc.)</div>
+                    </div>
+                </div>
+
+                <div class="fala-block" style="margin-top:14px;">
+                    <div class="fala-label">SDR → histórico de consultoria</div>
+                    <div class="fala key">"Entendi. E você chegou a fazer alguma consultoria conosco na época?"</div>
+                    <div class="fala lead">Lead responde sim ou não</div>
+                </div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Bifurcação — fez consultoria antes?</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✓ Sim, fez consultoria</div>
+                        <div class="fala">"Então é ainda mais importante você fazer novamente — <mark>mudou muita coisa desde então</mark>. Reestruturamos os planos, o produto evoluiu bastante e agora tem acompanhamento de mentor nos primeiros passos."</div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag nao">↓ Não fez consultoria</div>
+                        <div class="fala">"Então tá na hora de conhecer! <mark>Reestruturamos tudo</mark>, os planos ficaram muito mais completos e agora tem acompanhamento de mentor nos primeiros passos."</div>
+                    </div>
+                </div>
+
+                <div class="dica">
+                    <span>🔑</span>
+                    Escuta sem julgamento. Anota o motivo — vai usar isso na ponte de valor mais pra frente.
+                </div>
+            </div>
         </div>
 
-        <div class="fala-block" style="margin-top:14px">
-          <div class="fala-label">SDR — CNPJ</div>
-          <div class="fala key">"E sua barbearia está regularizada com <mark>CNPJ ativo</mark>? Pode ser MEI mesmo."</div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead responder</div>
-          <div class="fala lead">Lead confirma CNPJ ativo — ou não</div>
-        </div>
-        <div class="dica">
-          <span class="dica-icon">⚠️</span>
-          Se NÃO tem CNPJ → encerramento especial abaixo. Se SIM → segue pro agendamento.
+        <!-- ETAPA 3 -->
+        <div class="step" data-step="3">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">03</span>
+                <span class="step-dot verde"></span>
+                <span class="step-name">Exploração da dor atual</span>
+                <span class="step-time">~90s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala">"Legal. E hoje, o que mais tem te incomodado na gestão da barbearia? E me conta, alguém te ajuda no dia a dia — sócio, esposa?"</div>
+                <div class="fala lead">Lead descreve dor atual e informa sobre ajuda</div>
+
+                <div class="fala">"Você usa algum sistema hoje ou ainda faz tudo de forma manual?"</div>
+                <div class="fala lead">Lead informa ferramenta atual</div>
+
+                <div class="fala">"E hoje seus agendamentos funcionam como? Por alguma plataforma ou principalmente pelo WhatsApp?"</div>
+                <div class="fala lead">Lead explica fluxo de agendamento</div>
+
+                <div class="fala key">"Certo, e como está a parte contábil, <mark>[nome]</mark>? Tua barbearia está com <mark>CNPJ ativo</mark>? Tem alguém que cuida da contabilidade ou é você também que faz essa parte?"</div>
+                <div class="fala lead">Lead confirma CNPJ ativo — ou não</div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Validação CNPJ</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag danger">✕ Não tem CNPJ ativo</div>
+                        <div class="fala">"Cara, para dar o próximo passo aqui você precisa ter a empresa regularizada no seu nome — porque a gente tem um sistema bancário integrado e vamos movimentar o dinheiro do seu negócio, <mark>[nome]</mark>. Quando regularizar, volta aqui e a gente agenda na hora." — <strong>encerra a ligação.</strong></div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✓ Tem CNPJ ativo</div>
+                        <div class="fala">"Perfeito! Então podemos seguir."</div>
+                    </div>
+                </div>
+
+                <div class="dica">
+                    <span>🔑</span>
+                    Uma pergunta por vez. Não corrige, não vende — só escuta e anota. A dor de hoje pode ser diferente da época do cadastro.
+                </div>
+            </div>
         </div>
 
-      </div>
+        <!-- ETAPA 4 -->
+        <div class="step" data-step="4">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">04</span>
+                <span class="step-dot roxo"></span>
+                <span class="step-name">Qualificação estrutural</span>
+                <span class="step-time">~60s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"Perfeito. E hoje, <mark>quantas cadeiras ativas</mark> você tem na barbearia?"</div>
+                <div class="fala lead">Lead informa cadeiras</div>
+
+                <div class="fala key">"E sendo bem sincero: <mark>esse formato que você usa hoje dá bastante trabalho?</mark> Você sente que perde tempo ou se perde no controle?"</div>
+                <div class="fala lead">Lead valida a dor</div>
+
+                <div class="fala key">"E o faturamento médio mensal da barbearia hoje, <mark>gira em torno de quanto?</mark>"</div>
+                <div class="fala lead">Lead informa faturamento</div>
+
+                <div class="dica">
+                    <span>💡</span>
+                    Anota tudo — cadeiras, dor, faturamento. Essas informações vão compor a consultoria personalizada.
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 5 -->
+        <div class="step" data-step="5">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">05</span>
+                <span class="step-dot lima"></span>
+                <span class="step-name">Ponte de valor + ancoragem</span>
+                <span class="step-time">~60s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">
+                    "Então, você me contou que na época <mark>[repete o motivo que ele deu]</mark>. Faz sentido — e é exatamente por isso que essa consultoria agora faz ainda mais sentido pra você."
+                </div>
+
+                <div class="fala key">
+                    "Imagina ter um sistema que organiza tudo isso — <mark>agenda, assinatura, gestão financeira</mark> — enquanto você continua no operacional, cortando cabelo, vivendo a rotina da barbearia. Sem perder tempo, sem perder dinheiro, sem depender de anotação no papel ou de WhatsApp."
+                </div>
+
+                <div class="fala key">
+                    "E agora com <mark>acompanhamento de mentor nos primeiros passos</mark> — você não vai estar sozinho na implementação. Faz sentido?"
+                </div>
+
+                <div class="fala lead">Lead confirma interesse</div>
+
+                <div class="fala key">
+                    "Então deixa eu te explicar como funciona a consultoria: É individual e personalizada pra sua barbearia, acontece por Google Meet, dura cerca de <mark>1 hora</mark> — e é <mark>gratuita</mark>. O especialista vai olhar para a sua realidade — assinatura, gestão, performance. <mark>Faz sentido pra você fazer essa consultoria agora?</mark>"
+                </div>
+
+                <div class="fala lead">Lead confirma interesse na consultoria</div>
+
+                <div class="fala key">"Agora que você entendeu como funciona, <mark>[nome]</mark>, para quem está nessa faixa de faturamento, o investimento inicial para começar é a partir de <mark>R$ 300,00</mark>. Você teria condição de fazer esse investimento?"</div>
+                <div class="fala lead">Lead responde sim ou não sobre investimento</div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Validação de investimento</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag danger">✕ Não tem condição</div>
+                        <div class="fala">"Sem problema, <mark>[nome]</mark>! Quando estiver em um momento melhor financeiramente, a gente retoma. Muito sucesso!" — <strong>encerra a ligação.</strong></div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✓ Tem condição</div>
+                        <div class="fala">"Perfeito! Então vamos prosseguir com o agendamento."</div>
+                    </div>
+                </div>
+
+                <div class="dica">
+                    <span>💡</span>
+                    Use o motivo que o lead deu na etapa 2 para conectar com a solução. "Você me disse que na época foi por X — a gente resolveu exatamente isso."
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 6 -->
+        <div class="step" data-step="6">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">06</span>
+                <span class="step-dot laranja"></span>
+                <span class="step-name">Verificação de decisor</span>
+                <span class="step-time">~40s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"Você faz essa gestão sozinho ou tem sócio, esposa ou alguém que participa das decisões com você?"</div>
+                <div class="fala lead">Lead informa se tem parceiro de decisão</div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Bifurcação — decisor</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✓ Tem sócio / esposa / parceiro</div>
+                        <div class="fala key">"Importante — como isso envolve o negócio dos dois, o ideal é que <mark>[sócio/esposa]</mark> esteja na consultoria também. No dia que formos agendar, ela/ele consegue estar presente?"</div>
+                        <div class="fala lead">Lead confirma disponibilidade do parceiro</div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag nao">↓ Decide sozinho</div>
+                        <div class="fala">"Perfeito! Então vamos direto pro agendamento."</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 7 -->
+        <div class="step" data-step="7">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">07</span>
+                <span class="step-dot verde"></span>
+                <span class="step-name">Agendamento + confirmação firme</span>
+                <span class="step-time">~50s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"Perfeito. Tenho um horário disponível <mark>dia [X] às [horário]</mark> — funciona pra você?"</div>
+                <div class="fala lead">Lead confirma o horário</div>
+
+                <div class="fala key">
+                    "Peço só que você esteja em um <mark>lugar tranquilo, sem estar atendendo, com foco total</mark> durante a hora. Essa consultoria é personalizada — o especialista vai chegar preparado pra falar da sua realidade. Consegue garantir isso?"
+                </div>
+
+                <div class="fala key" style="border-left-color: #ff4444; background: rgba(255,68,68,0.1);">
+                    "Uma coisa importante, <mark>[nome]</mark>: a <mark>primeira consultoria de 1 hora é gratuita</mark>. Mas se precisar reagendar, <mark>haverá um custo para remarcar</mark> — porque o especialista bloqueia esse tempo exclusivamente pra você. Então anota já na sua agenda e garante esse horário, tá bom?"
+                </div>
+
+                <div class="fala lead">Lead confirma ciência do reagendamento</div>
+
+                <div class="fala key">
+                    "Então está combinado, <mark>[nome]</mark>! Já vou te mandar uma mensagem no WhatsApp agora — <mark>me responde lá</mark> pra confirmar que chegou. Junto com o link, vou te mandar também um depoimento de uma barbearia que passou pelo mesmo caminho."
+                </div>
+
+                <div class="fala">"Muito obrigado pela atenção, <mark>[nome]</mark>. Até <mark>[dia]</mark>! 👊"</div>
+
+                <div class="obj-section">
+                    <div class="obj-title">Objeções frequentes</div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"Não tenho tempo essa semana"</div>
+                        <div class="obj-a">"Entendo, mas olha — a gente tá estendendo essa condição do Mentor só até sexta-feira. Se precisar, peço pro especialista abrir a agenda fora do horário comercial. Mas <mark>[nome]</mark>, você tem que querer essa mudança na sua vida. A gente se adapta — você consegue?"</div>
+                    </div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"Quanto custa?" / "Qual o preço?"</div>
+                        <div class="obj-a">"A consultoria de 1 hora é gratuita — sem compromisso. No final, se fizer sentido, o especialista apresenta as opções. Mas o foco é entender sua realidade primeiro."</div>
+                    </div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"Já conheci antes e não me interessei"</div>
+                        <div class="obj-a">"Entendo! E é exatamente por isso que vale fazer de novo — mudou muita coisa desde então. Reestruturamos os planos, o produto evoluiu bastante e agora tem mentor nos primeiros passos. Vai ser uma consultoria diferente da que você viu."</div>
+                    </div>
+                </div>
+
+                <div class="enc-section">
+                    <div class="enc-title">Encerramentos especiais</div>
+
+                    <div class="enc-item">
+                        <div class="enc-q sem-barb">🚫 Não tem mais barbearia</div>
+                        <div class="enc-a">"Entendo, <mark>[nome]</mark>! Sem problema. Se um dia retomar, a gente tá aqui. Muito sucesso pra você em qualquer caminho que escolher. Até mais!"</div>
+                    </div>
+
+                    <div class="enc-item">
+                        <div class="enc-q sem-cnpj">⚠️ Não tem CNPJ / empresa não regularizada</div>
+                        <div class="enc-a">"Cara, para dar o próximo passo aqui você precisa ter a empresa regularizada no seu nome — porque a gente tem um sistema bancário integrado e vamos movimentar o dinheiro do seu negócio, <mark>[nome]</mark>. Quando regularizar, volta aqui e a gente agenda na hora."</div>
+                    </div>
+
+                    <div class="enc-item">
+                        <div class="enc-q sem-cnpj">💰 Não tem condição de investimento</div>
+                        <div class="enc-a">"Sem problema, <mark>[nome]</mark>! Quando estiver em um momento melhor financeiramente, a gente retoma. Muito sucesso!"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- ETAPA 7 -->
-    <div class="step" data-step="7">
-      <div class="step-header" onclick="toggleStep(this)">
-        <span class="step-num">07</span>
-        <span class="step-dot" style="background:#00D4AA"></span>
-        <span class="step-name">Agendamento + confirmação firme</span>
-        <span class="step-time">~50s</span>
-        <span class="step-arrow">▶</span>
-      </div>
-      <div class="step-body">
-
-        <div class="fala-block">
-          <div class="fala-label">SDR</div>
-          <div class="fala key">"Perfeito. Tenho um horário disponível <mark>dia [X] às [horário]</mark> — funciona pra você?"</div>
+    <div class="tips-box">
+        <div class="tips-header">🔑 Dicas para retrabalho</div>
+        <div class="tips-list">
+            <div class="tip-item"><span class="tip-icon">→</span>Nunca mencione que ele "não fechou antes" — o posicionamento é de seleção especial, não de segunda chance.</div>
+            <div class="tip-item"><span class="tip-icon">→</span>Use o motivo que ele deu pra não ter continuado como argumento: "Justamente por isso, o que mudou resolve esse ponto."</div>
+            <div class="tip-item"><span class="tip-icon">→</span>Destaca sempre os dois diferenciais novos: <strong>planos reestruturados</strong> e <strong>acompanhamento de mentor</strong>.</div>
+            <div class="tip-item"><span class="tip-icon">→</span>O aviso de custo de reagendamento é obrigatório — aumenta o comprometimento e reduz no-show.</div>
+            <div class="tip-item"><span class="tip-icon">→</span>Validação de CNPJ e sócio acontece na exploração da dor — conecta naturalmente com a conversa sobre o negócio.</div>
+            <div class="tip-item"><span class="tip-icon">→</span>Validação de investimento só após ponte de valor — lead entende primeiro o que vai receber.</div>
         </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead confirmar</div>
-          <div class="fala lead">Lead confirma o horário</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">Confirmação de ambiente</div>
-          <div class="fala key">
-            "Peço só que você esteja em um <mark>lugar tranquilo, sem estar atendendo, com foco total</mark> durante a hora. Essa consultoria é personalizada — o especialista vai chegar preparado pra falar da sua realidade. Consegue garantir isso?"
-          </div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">Aviso de reagendamento — obrigatório</div>
-          <div class="fala key" style="border-left-color: var(--red); background: rgba(255,68,68,0.06);">
-            "Uma coisa importante, <mark>[nome]</mark>: a <mark>primeira consultoria de 1 hora é gratuita</mark>. Mas se precisar reagendar, <mark>haverá um custo para remarcar</mark> — porque o especialista bloqueia esse tempo exclusivamente pra você. Então anota já na sua agenda e garante esse horário, tá bom?"
-          </div>
-        </div>
-        <div class="fala-block">
-          <div class="fala-label lead-label">Aguardar lead confirmar</div>
-          <div class="fala lead">Lead confirma ciência do reagendamento</div>
-        </div>
-
-        <div class="fala-block">
-          <div class="fala-label">Encerramento</div>
-          <div class="fala key">
-            "Então está combinado, <mark>[nome]</mark>! Já vou te mandar uma mensagem no WhatsApp agora — <mark>me responde lá</mark> pra confirmar que chegou. Junto com o link, vou te mandar também um depoimento de uma barbearia que passou pelo mesmo caminho. Vale assistir antes da consultoria."
-          </div>
-          <div class="fala">"Muito obrigado pela atenção, <mark>[nome]</mark>. Até <mark>[dia]</mark>! 👊"</div>
-        </div>
-
-        <div class="obj-section">
-          <div class="obj-title">Objeções frequentes</div>
-
-          <div class="obj-item">
-            <div class="obj-q">"Não tenho tempo essa semana"</div>
-            <div class="obj-a">"Entendo, mas olha — a gente tá estendendo essa condição do Mentor só até sexta-feira. Se precisar, peço pro especialista abrir a agenda fora do horário comercial. Mas <strong>[nome]</strong>, você tem que querer essa mudança na sua vida. A gente se adapta — você consegue?"</div>
-          </div>
-
-          <div class="obj-item">
-            <div class="obj-q">"Quanto custa?" / "Qual o preço?"</div>
-            <div class="obj-a">"A consultoria de 1 hora é gratuita — sem compromisso. No final, se fizer sentido, o especialista apresenta as opções. Mas o foco é entender sua realidade primeiro."</div>
-          </div>
-
-          <div class="obj-item">
-            <div class="obj-q">"Já conheci antes e não me interessei"</div>
-            <div class="obj-a">"Entendo! E é exatamente por isso que vale fazer de novo — mudou muita coisa desde então. Reestruturamos os planos, o produto evoluiu bastante e agora tem mentor nos primeiros passos. Vai ser uma consultoria diferente da que você viu."</div>
-          </div>
-
-          <div class="obj-item">
-            <div class="obj-q">"Me manda no WhatsApp que eu vejo depois"</div>
-            <div class="obj-a">"Claro, vou mandar! Mas o que vai fazer diferença de verdade é a consultoria — porque é personalizada pro seu negócio. Deixa eu garantir um horário enquanto a gente tá aqui. Semana que vem funciona?"</div>
-          </div>
-
-          <div class="obj-item">
-            <div class="obj-q">"Preciso falar com meu sócio / esposa"</div>
-            <div class="obj-a">"Faz total sentido — a decisão é de vocês dois. O ideal é que os dois estejam na consultoria. Qual dia vocês conseguem uma hora juntos? A gente agenda pra quando funcionar melhor."</div>
-          </div>
-
-        </div>
-
-        <div class="enc-section">
-          <div class="enc-title">Encerramentos especiais</div>
-
-          <div class="enc-item">
-            <div class="enc-q nao-tem">🚫 Não tem mais barbearia</div>
-            <div class="enc-a">"Entendo, <strong>[nome]</strong>! Sem problema. Se um dia retomar, a gente tá aqui. Muito sucesso pra você em qualquer caminho que escolher. Até mais!"</div>
-          </div>
-
-          <div class="enc-item">
-            <div class="enc-q cnpj">⚠️ Não tem CNPJ / empresa não regularizada</div>
-            <div class="enc-a">"Cara, para dar o próximo passo aqui você precisa ter a empresa regularizada no seu nome — porque a gente tem um sistema bancário integrado e vamos movimentar o dinheiro do seu negócio, <strong>[nome]</strong>. Quando regularizar, volta aqui e a gente agenda na hora. Qualquer dúvida é só chamar! 😊"</div>
-          </div>
-
-          <div class="enc-item">
-            <div class="enc-q budget">💰 Faturamento até R$ 10.000 sem condição de investir</div>
-            <div class="enc-a">"Sem problema, <strong>[nome]</strong>! Quando estiver em um momento mais confortável financeiramente, entra em contato e a gente retoma. Muito sucesso! 😊"</div>
-          </div>
-
-          <div class="enc-item">
-            <div class="enc-q aluno">🎓 Já é aluno do Cash Barber</div>
-            <div class="enc-a">"Certo, <strong>[nome]</strong>! Parabéns por ter dado esse passo. Fica ligado: em breve vamos ter um lançamento incrível exclusivo para quem já é aluno. Você vai ser um dos primeiros a saber. Tamo junto! 💪"</div>
-          </div>
-
-        </div>
-
-      </div>
     </div>
 
-  </div><!-- /steps -->
-
-  <div class="tips-box">
-    <div class="tips-header">🔑 Dicas para retrabalho</div>
-    <div class="tips-list">
-      <div class="tip-item"><span class="tip-icon">→</span>Nunca mencione que ele "não fechou antes" — o posicionamento é de seleção especial, não de segunda chance.</div>
-      <div class="tip-item"><span class="tip-icon">→</span>Use o motivo que ele deu pra não ter continuado como argumento: "Justamente por isso, o que mudou resolve esse ponto."</div>
-      <div class="tip-item"><span class="tip-icon">→</span>Destaca sempre os dois diferenciais novos: <strong>planos reestruturados</strong> e <strong>acompanhamento de mentor</strong>.</div>
-      <div class="tip-item"><span class="tip-icon">→</span>O aviso de custo de reagendamento é obrigatório — aumenta o comprometimento e reduz no-show.</div>
-      <div class="tip-item"><span class="tip-icon">→</span>Se o lead pedir preço ou detalhes: "O especialista vai te explicar com muito mais clareza na consultoria."</div>
+    <div class="rules-section">
+        <div class="rules-header">⚡ Regras do jogo</div>
+        <div class="rules-grid">
+            <div class="rule-item"><div class="rule-icon green">✓</div>Valida se ainda tem barbearia antes de qualquer coisa.</div>
+            <div class="rule-item"><div class="rule-icon green">✓</div>Pergunta o que aconteceu na época — e usa a resposta na ponte de valor.</div>
+            <div class="rule-item"><div class="rule-icon green">✓</div>Valida faturamento, CNPJ e decisor em toda ligação.</div>
+            <div class="rule-item"><div class="rule-icon green">✓</div>Informa obrigatoriamente o custo de reagendamento.</div>
+            <div class="rule-item"><div class="rule-icon red">✕</div>Não menciona que ele "não fechou antes" ou que é uma recuperação.</div>
+            <div class="rule-item"><div class="rule-icon red">✕</div>Não fale de preço antes da ponte de valor. Sequência: valor → investimento.</div>
+        </div>
     </div>
-  </div>
 
-  <div class="rules-section">
-    <div class="rules-header">⚡ Regras do jogo</div>
-    <div class="rules-grid">
-      <div class="rule-item"><div class="rule-icon green">✓</div>Valida se ainda tem barbearia antes de qualquer coisa.</div>
-      <div class="rule-item"><div class="rule-icon green">✓</div>Pergunta o que aconteceu na época — e usa a resposta na ponte de valor.</div>
-      <div class="rule-item"><div class="rule-icon green">✓</div>Valida faturamento, CNPJ e decisor em toda ligação.</div>
-      <div class="rule-item"><div class="rule-icon green">✓</div>Informa obrigatoriamente o custo de reagendamento.</div>
-      <div class="rule-item"><div class="rule-icon red">✕</div>Não menciona que ele "não fechou antes" ou que é uma recuperação.</div>
-      <div class="rule-item"><div class="rule-icon red">✕</div>Não fale de preço. Se insistirem: "o especialista apresenta na consultoria."</div>
-      <div class="rule-item"><div class="rule-icon red">✕</div>Não avance pro agendamento sem o "sim" na confirmação de interesse.</div>
-      <div class="rule-item"><div class="rule-icon red">✕</div>Não agenda sem confirmar que o lead estará em ambiente calmo.</div>
+    <div class="footer">
+        <span class="footer-brand">CASH BARBER · PODIUM EDUCAÇÃO</span><br>
+        <span>Retrabalho · Uso interno</span>
     </div>
-  </div>
-
-  <div class="footer">
-    <span class="footer-brand">CASH BARBER · PODIUM EDUCAÇÃO</span>
-    <span>Retrabalho · Uso interno</span>
-  </div>
-
 </div>
 
 <script>
-  function toggleStep(header) {
+function toggleStep(header) {
     const step = header.closest('.step');
     step.classList.toggle('active');
     updateProgress();
-  }
-  function updateProgress() {
-    const total = document.querySelectorAll('.step').length;
-    const open = document.querySelectorAll('.step.active').length;
-    document.getElementById('progress').style.width = (open / total * 100) + '%';
-  }
-  updateProgress();
+}
+
+function updateProgress() {
+    const totalSteps = document.querySelectorAll('.step').length;
+    const activeSteps = document.querySelectorAll('.step.active').length;
+    const percentage = (activeSteps / totalSteps) * 100;
+    document.getElementById('progress').style.width = percentage + '%';
+}
+
+// Inicializa o progresso
+updateProgress();
 </script>
 
 </body>
