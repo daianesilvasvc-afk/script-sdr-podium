@@ -18,7 +18,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             padding: 40px 20px;
             text-align: center;
         }
@@ -86,6 +86,10 @@
             --accent-color: #ff6b35;
         }
         
+        .script-card.reagendamento {
+            --accent-color: #FF3366;
+        }
+        
         .script-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -115,7 +119,7 @@
         .script-meta {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
@@ -166,6 +170,13 @@
             text-decoration: underline;
         }
         
+        @media (max-width: 1024px) {
+            .scripts-container {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 25px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
@@ -196,6 +207,10 @@
         
         .script-card.retrabalho {
             animation-delay: 0.2s;
+        }
+        
+        .script-card.reagendamento {
+            animation-delay: 0.4s;
         }
         
         @keyframes slideUp {
@@ -251,6 +266,24 @@
                     <span class="meta-item">🔄 Lead frio</span>
                 </div>
                 <a href="script_retrabalho_podium.html" class="script-button">
+                    Acessar Script
+                </a>
+            </div>
+            
+            <!-- Script Reagendamento -->
+            <div class="script-card reagendamento">
+                <div class="script-icon">⚠️</div>
+                <h2 class="script-title">Script Reagendamento</h2>
+                <p class="script-description">
+                    Leads que reagendaram ou fizeram no-show. Revisita a dor, 
+                    cria comprometimento e resgata o agendamento com urgência.
+                </p>
+                <div class="script-meta">
+                    <span class="meta-item">⏱ 5-8 min</span>
+                    <span class="meta-item">⚠️ Urgente</span>
+                    <span class="meta-item">🔥 No-show</span>
+                </div>
+                <a href="script_reagendamento_podium.html" class="script-button">
                     Acessar Script
                 </a>
             </div>
