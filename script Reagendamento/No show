@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script SDR — Reagendamento & No-Show</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --white: #F5F3EE;
+            --accent: #FF3366;
+            --accent2: #FF6B35;
+            --gray: #1A1A1A;
+            --gray2: #2A2A2A;
+            --gray3: #3D3D3D;
+            --text-muted: #888;
+            --text-mid: #BBBBBB;
+            --purple: #7B61FF;
+            --teal: #00D4AA;
+            --green: #C8FF00;
+            --red: #FF4444;
+            --yellow: #FFD700;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; line-height: 1.6; }
+
+        .hero { padding: 56px 48px 36px; border-bottom: 1px solid var(--gray); position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,51,102,0.08) 0%, transparent 70%); pointer-events: none; }
+        .hero-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .hero-label::before { content: '——'; color: var(--accent); margin-right: 8px; }
+        
+        .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 48px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
+        .hero-sub { font-size: 14px; color: var(--text-muted); max-width: 540px; }
+        .hero-meta { margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .meta-pill { padding: 8px 16px; font-size: 13px; font-weight: 500; background: var(--gray); display: flex; align-items: center; gap: 8px; border-radius: 20px; }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+        .alert-bar { background: rgba(255,51,102,0.1); border: 1px solid rgba(255,51,102,0.3); border-radius: 10px; padding: 14px 20px; margin: 30px 48px; color: var(--accent); }
+
+        .steps { margin-top: 36px; }
+        .step { border-top: 1px solid var(--gray3); overflow: hidden; }
+        .step-header { padding: 18px 24px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .2s; position: relative; }
+        .step-header:hover { background: rgba(255,255,255,0.02); }
+        .step-num { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 24px; }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .step-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; flex: 1; }
+        .step-time { font-size: 11px; color: var(--text-muted); }
+        .step-arrow { color: var(--text-muted); font-size: 14px; transition: transform .2s; }
+        .step.active .step-arrow { transform: rotate(90deg); }
+        .step-body { padding: 0 24px 24px; border-top: 1px solid var(--gray3); display: none; background: rgba(255,255,255,0.008); }
+        .step.active .step-body { display: block; }
+
+        .step-dot.vermelho { background: var(--accent); }
+        .step-dot.laranja { background: var(--accent2); }
+        .step-dot.amarelo { background: var(--yellow); }
+        .step-dot.verde { background: var(--teal); }
+        .step-dot.roxo { background: var(--purple); }
+
+        .fala { background: var(--gray); border-radius: 10px; padding: 14px 18px; margin: 12px 0; border-left: 3px solid transparent; position: relative; }
+        .fala.key { border-left-color: var(--accent); background: rgba(255,51,102,0.06); }
+        .fala.lead { border-left-color: var(--purple); background: rgba(123,97,255,0.06); color: #B8AFFF; font-style: italic; }
+        .fala.critical { border-left-color: var(--yellow); background: rgba(255,215,0,0.08); color: #FFE55C; font-weight: 500; }
+
+        .bifurc { border: 1px solid var(--gray3); border-radius: 14px; margin: 18px 0; overflow: hidden; }
+        .bifurc-header { padding: 14px 18px; background: var(--gray); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; }
+        .bifurc-bloco { padding: 18px; border-top: 1px solid var(--gray3); }
+        .bifurc-tag { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+        .bifurc-tag.sim { color: var(--teal); }
+        .bifurc-tag.nao { color: var(--accent2); }
+        .bifurc-tag.danger { color: var(--red); }
+        .bifurc-tag.reagenda { color: var(--accent); }
+        .bifurc-tag.noshow { color: var(--yellow); }
+
+        .dica { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 12px; color: #CCC; display: flex; gap: 8px; }
+        .dica.importante { background: rgba(255,51,102,0.08); border: 1px solid rgba(255,51,102,0.2); color: #FF8BA3; }
+        .dica.psicologia { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.2); color: #FFE55C; }
+
+        .obj-section { margin-top: 18px; }
+        .obj-title { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--red); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+        .obj-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,68,68,0.2); }
+        .obj-item { border: 1px solid var(--gray3); border-radius: 10px; overflow: hidden; margin-bottom: 7px; }
+        .obj-q { padding: 10px 15px; font-size: 13px; font-weight: 500; color: #FF8C8C; background: rgba(255,68,68,0.05); display: flex; align-items: center; gap: 8px; }
+        .obj-q::before { content: '✕'; font-size: 11px; opacity: .6; }
+        .obj-a { padding: 10px 15px; font-size: 13px; color: #D8D5CF; line-height: 1.6; border-top: 1px solid var(--gray3); }
+
+        .tips-box { border: 1px solid rgba(255,51,102,0.2); border-radius: 14px; margin: 36px 0; overflow: hidden; }
+        .tips-header { padding: 14px 20px; background: rgba(255,51,102,0.06); font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+        .tips-list { padding: 14px 20px; }
+        .tip-item { margin: 8px 0; display: flex; gap: 8px; align-items: flex-start; }
+        .tip-icon { color: var(--accent); font-weight: 700; }
+
+        .footer { margin-top: 30px; padding: 20px 48px; border-top: 1px solid var(--gray3); text-align: center; font-size: 11px; color: var(--text-muted); }
+        .footer-brand { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
+
+        mark { background: rgba(255,51,102,0.3); color: #FF8BA3; padding: 2px 4px; border-radius: 3px; font-weight: 500; }
+
+        .progress-bar { height: 3px; background: var(--gray3); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+
+        .contexto-box { border: 1px solid var(--gray3); border-radius: 14px; margin: 20px 0; overflow: hidden; }
+        .contexto-header { padding: 14px 20px; background: var(--gray); font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+        .contexto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .contexto-item { padding: 14px 20px; border-bottom: 1px solid var(--gray3); border-right: 1px solid var(--gray3); display: flex; gap: 8px; align-items: flex-start; }
+        .contexto-item:nth-child(2n) { border-right: none; }
+        .contexto-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; margin-top: 1px; }
+        .contexto-icon.reagenda { background: rgba(255,51,102,0.2); color: var(--accent); }
+        .contexto-icon.noshow { background: rgba(255,215,0,0.2); color: var(--yellow); }
+
+        @media (max-width: 768px) {
+            .hero { padding: 40px 24px 24px; }
+            .alert-bar { margin: 20px 24px; }
+            .step-header { padding: 14px 18px; }
+            .step-body { padding: 0 18px 18px; }
+            .footer { padding: 20px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<div class="hero">
+    <div class="hero-label">Cash Barber · Pré-vendas</div>
+    <h1>Script SDR<br>reagendamento</h1>
+    <p class="hero-sub">Leads que reagendaram ou fizeram no-show. Revisita a dor, cria comprometimento e resgata o agendamento.</p>
+    <div class="hero-meta">
+        <span class="meta-pill">⏱ Meta: 5–8 min</span>
+        <span class="meta-pill">🎯 Objetivo: reagendar consultoria</span>
+        <span class="meta-pill">⚠️ Base: reagendamento/no-show</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="alert-bar">
+        ⚠️ <strong>Contexto:</strong> esse lead já agendou uma consultoria mas reagendou ou não compareceu. O foco é criar comprometimento real através da conversa sobre agenda e responsabilidade mútua.
+    </div>
+
+    <div class="contexto-box">
+        <div class="contexto-header">📋 Contextos de uso</div>
+        <div class="contexto-grid">
+            <div class="contexto-item">
+                <div class="contexto-icon reagenda">R</div>
+                <div><strong>Reagendamento:</strong> Lead pediu para reagendar a consultoria por motivos diversos (trabalho, pessoal, emergência)</div>
+            </div>
+            <div class="contexto-item">
+                <div class="contexto-icon noshow">N</div>
+                <div><strong>No-show:</strong> Lead simplesmente não apareceu no horário agendado sem avisar previamente</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="steps" id="steps">
+
+        <!-- ETAPA 1 -->
+        <div class="step active" data-step="1">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">01</span>
+                <span class="step-dot vermelho"></span>
+                <span class="step-name">Abertura empática + contexto</span>
+                <span class="step-time">~30s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Abertura por contexto</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag reagenda">📅 Reagendamento</div>
+                        <div class="fala key">"Oi <mark>[nome]</mark>! Tudo bem? Aqui é o <mark>[seu nome]</mark>, da equipe do Lincohn. Recebi aqui que você precisou reagendar nossa consultoria. Tudo certo por aí?"</div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag noshow">⏰ No-show</div>
+                        <div class="fala key">"Oi <mark>[nome]</mark>! Tudo bem? Aqui é o <mark>[seu nome]</mark>, da equipe do Lincohn. Ontem ficamos te esperando na consultoria. Aconteceu alguma coisa?"</div>
+                    </div>
+                </div>
+
+                <div class="fala lead">Lead explica o que aconteceu (emergência, trabalho, esqueceu, etc.)</div>
+
+                <div class="fala key">"Entendo perfeitamente, <mark>[nome]</mark>. Essas coisas acontecem mesmo. O importante é que você ainda tem interesse na consultoria, né?"</div>
+                <div class="fala lead">Lead confirma interesse</div>
+
+                <div class="dica importante">
+                    <span>🎯</span>
+                    Tom empático, sem julgamento. O objetivo é deixar o lead confortável para explicar o que aconteceu.
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 2 -->
+        <div class="step" data-step="2">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">02</span>
+                <span class="step-dot laranja"></span>
+                <span class="step-name">Revisitando a dor</span>
+                <span class="step-time">~90s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"<mark>[nome]</mark>, lembra que conversamos sobre <mark>[dor específica mencionada na primeira ligação]</mark>? Você me falou que <mark>[detalhe específico que ele mencionou]</mark>."</div>
+                <div class="fala lead">Lead confirma que lembra</div>
+
+                <div class="fala key">"Então, nessa semana que passou, essa questão continuou te incomodando? Porque imagina — todo dia que passa sem resolver isso, é mais tempo perdido, mais dinheiro que escapa, mais desgaste pra você."</div>
+                <div class="fala lead">Lead confirma que o problema persiste</div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Intensificando a dor</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag danger">😣 Confirma que ainda incomoda</div>
+                        <div class="fala">"Cara, então você não pode deixar isso passar mais tempo. Se já estava te tirando o sono e continua igual, isso não vai se resolver sozinho. Vai só piorar."</div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag nao">🤷‍♂️ Minimiza o problema</div>
+                        <div class="fala">"<mark>[nome]</mark>, se não fosse um problema real, você não teria agendado uma consultoria. Não se engana — se tá incomodando, é porque precisa resolver."</div>
+                    </div>
+                </div>
+
+                <div class="fala key">"E me fala uma coisa com sinceridade: <mark>quanto tempo por dia</mark> você perde lidando com <mark>[problema específico]</mark>? Cobrança, organização, agenda bagunçada..."</div>
+                <div class="fala lead">Lead estima tempo perdido</div>
+
+                <div class="fala key">"Exato! <mark>[tempo mencionado]</mark> por dia que você poderia estar cortando cabelo, faturando, ou até descansando. Esse é o custo real do problema."</div>
+
+                <div class="dica psicologia">
+                    <span>📋</span>
+                    <strong>ESSENCIAL:</strong> Use informações específicas da primeira ligação. Ex: "Você me disse que perde 2h por dia organizando agenda" ou "Lembra que falou sobre a dificuldade com cobrança?"
+                </div>
+
+                <div class="dica psicologia">
+                    <span>🧠</span>
+                    Não deixe ele esquecer por que agendou. Traga de volta a dor original e intensifique — o problema não sumiu, provavelmente piorou.
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 3 -->
+        <div class="step" data-step="3">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">03</span>
+                <span class="step-dot amarelo"></span>
+                <span class="step-name">Conversa sobre agenda e compromisso</span>
+                <span class="step-time">~60s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"<mark>[nome]</mark>, você trabalha com agenda na barbearia, né? Então você me entende perfeitamente."</div>
+                <div class="fala lead">Lead confirma</div>
+
+                <div class="fala key">"Quando um cliente marca e não aparece, ou cancela em cima da hora, o que acontece? Você deixa de atender outro, perde dinheiro, se organiza à toa..."</div>
+                <div class="fala lead">Lead concorda com a analogia</div>
+
+                <div class="fala key">"Aqui funciona igual, brother. Nosso especialista bloqueia esse tempo exclusivamente pra você, prepara material personalizado da sua barbearia, organiza a agenda dele..."</div>
+
+                <div class="fala critical">
+                    "A <mark>primeira consultoria é gratuita</mark>, mas reagendamento tem custo de <mark>R$ 1.000,00</mark>. Se você garantir que vai comparecer, posso ver com a gerente daqui se posso abrir uma exceção pra ti, mas preciso de você, hein? Pra não me complicar aqui."
+                </div>
+
+                <div class="fala key">"Sei que imprevistos acontecem, mas nossa agenda é extremamente concorrida. Você também trabalha com agenda, né? Me entende... quando um cliente não aparece, você deixa de atender outro."</div>
+
+                <div class="fala lead">Lead confirma entendimento</div>
+
+                <div class="dica psicologia">
+                    <span>🎭</span>
+                    A analogia com a agenda da barbearia é poderosa — ele entende na pele o prejuízo de no-show. Use essa identificação a seu favor.
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 4 -->
+        <div class="step" data-step="4">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">04</span>
+                <span class="step-dot verde"></span>
+                <span class="step-name">Criando compromisso</span>
+                <span class="step-time">~45s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"Então me fala uma coisa com sinceridade: <mark>você realmente quer resolver essa questão da gestão da barbearia?</mark> Porque se realmente quiser, falo com meu/minha gerente aqui e abro uma exceção."</div>
+                <div class="fala lead">Lead reafirma interesse</div>
+
+                <div class="fala key">"E você consegue <mark>garantir mesmo</mark> que vai estar disponível no horário? Num lugar tranquilo, focado na consultoria?"</div>
+                <div class="fala lead">Lead garante disponibilidade</div>
+
+                <div class="bifurc">
+                    <div class="bifurc-header">▶ Nível de comprometimento</div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag sim">✅ Confirma compromisso</div>
+                        <div class="fala">"Perfeito! Então vou conseguir essa exceção com a gerência. Mas preciso que anote na agenda, coloque alarme, organize sua rotina. É um compromisso entre profissionais, tá bom?"</div>
+                    </div>
+                    <div class="bifurc-bloco">
+                        <div class="bifurc-tag nao">❓ Hesita ou demonstra dúvida</div>
+                        <div class="fala">"Ó, <mark>[nome]</mark>, se você não tá 100% certo, melhor a gente aguardar você se organizar. Não quero que aconteça de novo. Quando tiver certeza, me chama."</div>
+                        <div class="dica importante"><span>⚠️</span>Se hesitar → Encerra e agenda follow-up para 1 semana.</div>
+                    </div>
+                </div>
+
+                <div class="dica psicologia">
+                    <span>💪</span>
+                    O comprometimento público (falar "sim" em voz alta) cria responsabilidade psicológica. Force uma declaração clara de intenção.
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 5 -->
+        <div class="step" data-step="5">
+            <div class="step-header" onclick="toggleStep(this)">
+                <span class="step-num">05</span>
+                <span class="step-dot roxo"></span>
+                <span class="step-name">Reagendamento firme</span>
+                <span class="step-time">~60s</span>
+                <span class="step-arrow">▶</span>
+            </div>
+            <div class="step-body">
+                <div class="fala key">"Então tá! Vou conseguir essa exceção pra você. Tenho horário <mark>[dia] às [horário]</mark> — confirma pra mim que funciona."</div>
+                <div class="fala lead">Lead confirma horário</div>
+
+                <div class="fala key">"Perfeito. Agora vou te pedir uma coisa: <mark>anota na sua agenda agora</mark>, na minha frente. Qual app você usa? Agenda do celular?"</div>
+                <div class="fala lead">Lead informa onde anota</div>
+
+                <div class="fala key">"Anota lá: 'Consultoria Podium — <mark>[dia] [horário]</mark> — COMPROMISSO PROFISSIONAL'. Anotou?"</div>
+                <div class="fala lead">Lead confirma que anotou</div>
+
+                <div class="fala key">
+                    "E coloca alarme pra <mark>30 minutos antes</mark>, tá bom? Porque se reagendar de novo ou não aparecer, aí realmente vai ser os R$ 1.000 — não vou conseguir abrir outra exceção."
+                </div>
+
+                <div class="fala key">
+                    "Já vou mandar uma mensagem no WhatsApp com o link. <mark>Responde lá pra confirmar</mark> que recebeu, e no dia, 10 minutos antes, mando outro lembrete."
+                </div>
+
+                <div class="fala">"Combinado então, <mark>[nome]</mark>! <mark>[dia] às [horário]</mark>. Conto com você! 🤝"</div>
+
+                <div class="obj-section">
+                    <div class="obj-title">Objeções frequentes</div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"R$ 1.000 é muito caro para reagendamento"</div>
+                        <div class="obj-a">"Eu entendo, <mark>[nome]</mark>. Mas pensa comigo: quanto você perde quando um cliente não aparece? É exatamente isso que acontece aqui. O valor não é punitivo — é o custo real de reorganizar a agenda do especialista."</div>
+                    </div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"Não posso garantir 100% que vou conseguir"</div>
+                        <div class="obj-a">"Então melhor não marcarmos agora, <mark>[nome]</mark>. Quando você estiver numa situação mais estável e puder se comprometer de verdade, a gente agenda. O importante é que seja no momento certo pra você."</div>
+                    </div>
+
+                    <div class="obj-item">
+                        <div class="obj-q">"Posso marcar para a semana que vem?"</div>
+                        <div class="obj-a">"Perfeitamente! Importante é você estar 100% disponível. Vou ver os horários da semana que vem e a gente agenda com calma."</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="tips-box">
+        <div class="tips-header">🎯 Estratégias psicológicas</div>
+        <div class="tips-list">
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Espelhamento:</strong> Use a própria experiência dele com agenda para criar identificação.</div>
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Custo-benefício:</strong> Mostre o tempo perdido administrativamente vs. tempo cortando cabelo.</div>
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Comprometimento público:</strong> Force declarações verbais de intenção ("você garante?").</div>
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Reciprocidade:</strong> "Vou abrir uma exceção" cria senso de favor e obrigação.</div>
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Escassez:</strong> "Nossa agenda é extremamente concorrida" aumenta o valor percebido.</div>
+            <div class="tip-item"><span class="tip-icon">→</span><strong>Ancoragem:</strong> R$ 1.000 faz a consultoria gratuita parecer um grande benefício.</div>
+        </div>
+    </div>
+
+    <div class="contexto-box">
+        <div class="contexto-header">⚡ Regras de ouro</div>
+        <div class="contexto-grid">
+            <div class="contexto-item">
+                <div class="contexto-icon reagenda">✓</div>
+                <div>Sempre revisite a dor antes de falar sobre reagendamento. Sem dor ativa, não há urgência.</div>
+            </div>
+            <div class="contexto-item">
+                <div class="contexto-icon noshow">⚡</div>
+                <div>Use a analogia com a agenda da barbearia — identificação gera compreensão e compromisso.</div>
+            </div>
+            <div class="contexto-item">
+                <div class="contexto-icon reagenda">💪</div>
+                <div>Force comprometimento verbal e público. "Você consegue garantir?" precisa ser respondido com "sim".</div>
+            </div>
+            <div class="contexto-item">
+                <div class="contexto-icon noshow">📝</div>
+                <div>Faça ele anotar na agenda durante a ligação. Ação imediata gera compromisso real.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <span class="footer-brand">CASH BARBER · PODIUM EDUCAÇÃO</span><br>
+        <span>Reagendamento · Uso interno</span>
+    </div>
+</div>
+
+<script>
+function toggleStep(header) {
+    const step = header.closest('.step');
+    step.classList.toggle('active');
+    updateProgress();
+}
+
+function updateProgress() {
+    const totalSteps = document.querySelectorAll('.step').length;
+    const activeSteps = document.querySelectorAll('.step.active').length;
+    const percentage = (activeSteps / totalSteps) * 100;
+    document.getElementById('progress').style.width = percentage + '%';
+}
+
+// Inicializa o progresso
+updateProgress();
+</script>
+
+</body>
+</html>
